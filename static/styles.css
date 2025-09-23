@@ -1,0 +1,85 @@
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    text-align: center;
+    background: #eef6ff;
+}
+
+header {
+    padding: 10px 0;
+    background: #fff;
+    border-bottom: 1px solid #ccc;
+}
+header h1 {
+    margin: 0;
+}
+.controls {
+    margin-top: 5px;
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    align-items: center;
+}
+.btn {
+    text-decoration: none;
+    background: #2b8aef;
+    color: white;
+    padding: 6px 10px;
+    border-radius: 5px;
+    border: none;
+    cursor: pointer;
+}
+.btn.danger {
+    background: #e05656;
+}
+
+#canvas-container {
+    width: 100vw;
+    height: 80vh;
+    overflow: hidden;
+    position: relative;
+    background: #dcefff;
+}
+
+#canvas {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%) scale(1);
+    transform-origin: center center;
+}
+
+.tile {
+    width: 200px;
+    height: 150px;
+    background: white;
+    border: 2px solid #ddd;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 10px;
+    box-sizing: border-box;
+    text-align: center;
+    line-height: 1.2em;
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+    word-break: normal;
+    overflow: hidden;
+}
+
+textarea {
+    resize: none;
+    width: 300px;
+    height: 100px;
+}
+
+.counter {
+    font-size: 14px;
+    color: #666;
+    text-align: right;
+}
+
+select {
+    padding: 4px;
+    border-radius: 4px;
+}
