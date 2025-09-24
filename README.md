@@ -4,7 +4,6 @@ Collaborative Flask web app where users can post notes, pan/zoom the mosaic, and
 
 ## Features
 - Submit notes (max characters)
-- Golden-angle spiral layout
 - Zoom and pan canvas
 - Global language translation
 
