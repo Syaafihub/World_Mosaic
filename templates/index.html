@@ -13,8 +13,6 @@
     #canvas-container { width: 100vw; height: 100vh; position: relative; touch-action: none; }
     #canvas { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%) scale(1); }
     footer { position: fixed; bottom: 0; width: 100%; text-align: center; background: rgba(255,255,255,0.9); padding: 5px; font-size: 0.8em; }
-    .tile { position: absolute; width: 150px; height: 150px; background: #f0f0f0; border: 1px solid #ccc; display: flex; align-items: center; justify-content: center; text-align: center; padding: 10px; box-sizing: border-box; }
-    .note-text { font-size: 0.9em; }
     textarea { width: 200px; height: 50px; }
     button { padding: 5px 10px; }
   </style>
@@ -62,24 +60,29 @@ function updateTransform(){
   canvas.style.transform = `translate(calc(-50% + ${posX}px), calc(-50% + ${posY}px)) scale(${scale})`;
 }
 
-// --- Pan + Zoom ---
+// Zoom (mouse wheel)
 container.addEventListener('wheel', e => {
   e.preventDefault();
   scale += e.deltaY * -0.0015;
   scale = Math.min(Math.max(0.2, scale), 3);
   updateTransform();
 });
+
+// Pan (mouse)
 container.addEventListener('mousedown', e => {
-  isPanning = true; startX = e.clientX - posX; startY = e.clientY - posY;
+  isPanning = true;
+  startX = e.clientX - posX;
+  startY = e.clientY - posY;
 });
 window.addEventListener('mouseup', () => isPanning = false);
 window.addEventListener('mousemove', e => {
   if (!isPanning) return;
-  posX = e.clientX - startX; posY = e.clientY - startY;
+  posX = e.clientX - startX;
+  posY = e.clientY - startY;
   updateTransform();
 });
 
-// --- Touch Support ---
+// Mobile touch support
 container.addEventListener('touchstart', e => {
   if(e.touches.length === 1){
     isPanning = true;
@@ -113,34 +116,44 @@ container.addEventListener('touchmove', e => {
     lastDist = dist;
   }
 }, { passive: false });
+
 container.addEventListener('touchend', e => {
   if(e.touches.length < 2) lastDist = null;
   if(e.touches.length === 0) isPanning = false;
 });
 
-// --- Grid Positioning (Square Expansion) ---
-function positionTiles() {
+// Center-out expanding square grid
+function positionTilesSquareGrid() {
   const tiles = document.querySelectorAll('.tile');
-  const spacing = 170; // tile size + margin
+  const tileWidth = 150;
+  const tileHeight = 90;
+  const spacing = 20;
+
+  const totalNotes = tiles.length;
+  const gridSize = Math.ceil(Math.sqrt(totalNotes));
+  const centerOffset = (gridSize - 1) / 2;
+
   tiles.forEach((tile, idx) => {
-    let n = Math.ceil(Math.sqrt(tiles.length));
-    let row = Math.floor(idx / n);
-    let col = idx % n;
-    let offset = (n - 1) / 2;
-    let x = (col - offset) * spacing;
-    let y = (row - offset) * spacing;
+    const row = Math.floor(idx / gridSize);
+    const col = idx % gridSize;
+
+    const x = (col - centerOffset) * (tileWidth + spacing);
+    const y = (row - centerOffset) * (tileHeight + spacing);
+
+    tile.style.position = 'absolute';
     tile.style.left = `${x}px`;
     tile.style.top = `${y}px`;
     tile.dataset.x = x;
     tile.dataset.y = y;
+
     if(!tile.dataset.original){
       tile.dataset.original = tile.querySelector('.note-text').textContent;
     }
   });
 }
-positionTiles();
+positionTilesSquareGrid();
 
-// --- Focus on latest note ---
+// Auto-focus on newest note
 function focusOnLatestNote() {
   const tiles = document.querySelectorAll('.tile');
   if(!tiles.length) return;
@@ -162,35 +175,36 @@ function focusOnLatestNote() {
   scale = 1.2;
   updateTransform();
 }
+
 focusOnLatestNote();
 
-// --- Translation ---
+// Global language selector
 document.getElementById('langSelect').addEventListener('change', async () => {
-  const lang = document.getElementById('langSelect').value;
-  const tiles = document.querySelectorAll('.tile');
-  if(!lang){
-    tiles.forEach(tile => tile.querySelector('.note-text').textContent = tile.dataset.original);
-    return;
-  }
-  const indices = Array.from(tiles).map(t => t.dataset.index);
-  try{
-    const resp = await fetch("/translate", {
-      method:"POST",
-      headers:{"Content-Type":"application/json"},
-      body: JSON.stringify({indices, lang})
-    });
-    const data = await resp.json();
-    tiles.forEach(tile => {
-      const idx = tile.dataset.index;
-      if(data[idx]){
-        tile.querySelector('.note-text').textContent = data[idx];
-        tile.dataset[lang] = data[idx];
-      }
-    });
-  }catch(err){
-    console.error("Translation failed", err);
-    alert("Translation failed. Check console.");
-  }
+    const lang = document.getElementById('langSelect').value;
+    const tiles = document.querySelectorAll('.tile');
+    if(!lang){
+        tiles.forEach(tile => tile.querySelector('.note-text').textContent = tile.dataset.original);
+        return;
+    }
+    const indices = Array.from(tiles).map(t => t.dataset.index);
+    try{
+        const resp = await fetch("/translate", {
+            method:"POST",
+            headers:{"Content-Type":"application/json"},
+            body: JSON.stringify({indices, lang})
+        });
+        const data = await resp.json();
+        tiles.forEach(tile => {
+            const idx = tile.dataset.index;
+            if(data[idx]){
+                tile.querySelector('.note-text').textContent = data[idx];
+                tile.dataset[lang] = data[idx];
+            }
+        });
+    }catch(err){
+        console.error("Translation failed", err);
+        alert("Translation failed. Check console.");
+    }
 });
 </script>
 
