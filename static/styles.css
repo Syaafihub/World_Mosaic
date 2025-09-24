@@ -1,85 +1,127 @@
+/* General body */
 body {
-    font-family: Arial, sans-serif;
-    margin: 0;
-    text-align: center;
-    background: #eef6ff;
+  margin: 0;
+  font-family: Arial, sans-serif;
+  overflow: hidden;
+  background: #f0f0f0;
 }
 
+/* Header */
 header {
-    padding: 10px 0;
-    background: #fff;
-    border-bottom: 1px solid #ccc;
+  position: fixed;
+  top: 0;
+  width: 100%;
+  background: #fff;
+  z-index: 1000;
+  padding: 10px;
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
 }
+
 header h1 {
-    margin: 0;
-}
-.controls {
-    margin-top: 5px;
-    display: flex;
-    justify-content: center;
-    gap: 10px;
-    align-items: center;
-}
-.btn {
-    text-decoration: none;
-    background: #2b8aef;
-    color: white;
-    padding: 6px 10px;
-    border-radius: 5px;
-    border: none;
-    cursor: pointer;
-}
-.btn.danger {
-    background: #e05656;
+  margin: 0;
+  font-size: 1.5em;
 }
 
+header .controls {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+header .btn {
+  background: #4CAF50;
+  color: white;
+  padding: 6px 12px;
+  text-decoration: none;
+  border-radius: 5px;
+  font-weight: bold;
+}
+
+header .btn:hover {
+  background: #45a049;
+}
+
+/* Canvas container */
 #canvas-container {
-    width: 100vw;
-    height: 80vh;
-    overflow: hidden;
-    position: relative;
-    background: #dcefff;
+  width: 100vw;
+  height: 100vh;
+  position: relative;
+  touch-action: none;
 }
 
-#canvas {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%) scale(1);
-    transform-origin: center center;
-}
-
+/* Tiles / notes */
 .tile {
-    width: 200px;
-    height: 150px;
-    background: white;
-    border: 2px solid #ddd;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 10px;
-    box-sizing: border-box;
-    text-align: center;
-    line-height: 1.2em;
-    white-space: pre-wrap;
-    overflow-wrap: anywhere;
-    word-break: normal;
-    overflow: hidden;
+  width: 150px;
+  height: 90px;
+  background: #ffd966;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 10px;
+  box-sizing: border-box;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+  font-size: 14px;
+  line-height: 1.3;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  cursor: grab;
+  transition: transform 0.2s;
 }
 
+.tile:active {
+  cursor: grabbing;
+  transform: scale(1.05);
+}
+
+/* Note text */
+.note-text {
+  width: 100%;
+  height: 100%;
+  overflow-wrap: break-word;
+  word-break: break-word;
+}
+
+/* Footer */
+footer {
+  position: fixed;
+  bottom: 0;
+  width: 100%;
+  text-align: center;
+  background: rgba(255,255,255,0.9);
+  padding: 5px;
+  font-size: 0.8em;
+  box-shadow: 0 -2px 5px rgba(0,0,0,0.1);
+}
+
+/* Buttons & textareas */
 textarea {
-    resize: none;
-    width: 300px;
-    height: 100px;
+  width: 200px;
+  height: 50px;
+  font-size: 14px;
 }
 
-.counter {
-    font-size: 14px;
-    color: #666;
-    text-align: right;
+button {
+  padding: 6px 12px;
+  font-size: 14px;
+  border-radius: 5px;
+  border: none;
+  background: #4CAF50;
+  color: white;
+  cursor: pointer;
 }
 
+button:hover {
+  background: #45a049;
+}
+
+/* Dropdown */
 select {
-    padding: 4px;
-    border-radius: 4px;
+  padding: 5px;
+  font-size: 14px;
+  border-radius: 5px;
 }
