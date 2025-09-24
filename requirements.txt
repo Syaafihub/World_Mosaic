@@ -2,3 +2,4 @@ Flask==2.3.2
 gunicorn==21.2.0
 better_profanity==0.7.0
 googletrans-py==4.0.0
+pymongo==4.6.0
