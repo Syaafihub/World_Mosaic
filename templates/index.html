@@ -4,15 +4,26 @@
   <meta charset="UTF-8">
   <title>World Mosaic</title>
   <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <style>
+    body { margin: 0; overflow: hidden; font-family: Arial, sans-serif; }
+    header { position: fixed; top: 0; width: 100%; background: #fff; z-index: 1000; padding: 10px; display: flex; align-items: center; gap: 20px; }
+    header h1 { margin: 0; font-size: 1.5em; }
+    header .controls { display: flex; align-items: center; gap: 10px; }
+    #canvas-container { width: 100vw; height: 100vh; position: relative; touch-action: none; }
+    #canvas { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%) scale(1); }
+    .tile { width: 100px; height: 60px; background: #ffd966; border-radius: 8px; display: flex; align-items: center; justify-content: center; text-align: center; padding: 5px; box-sizing: border-box; }
+    footer { position: fixed; bottom: 0; width: 100%; text-align: center; background: rgba(255,255,255,0.9); padding: 5px; font-size: 0.8em; }
+    textarea { width: 200px; height: 50px; }
+    button { padding: 5px 10px; }
+  </style>
 </head>
 <body>
+
 <header>
   <h1>🌍 World Mosaic</h1>
   <div class="controls">
     <a class="btn" href="{{ url_for('submit') }}">➕ Add Note</a>
-    <form action="{{ url_for('reset') }}" method="POST" style="display:inline;">
-    </form>
     <span>Total Notes: {{ notes|length }}</span>
     <select id="langSelect">
       <option value="">Original</option>
@@ -21,7 +32,6 @@
       <option value="fr">French</option>
       <option value="de">German</option>
       <option value="ja">Japanese</option>
-      <!-- Add more languages as needed -->
     </select>
   </div>
 </header>
@@ -45,12 +55,13 @@ const canvas = document.getElementById('canvas');
 const container = document.getElementById('canvas-container');
 let scale = 1, posX = 0, posY = 0;
 let isPanning = false, startX, startY;
+let lastDist = null;
 
 function updateTransform(){
   canvas.style.transform = `translate(calc(-50% + ${posX}px), calc(-50% + ${posY}px)) scale(${scale})`;
 }
 
-// Zoom
+// Zoom (mouse wheel)
 container.addEventListener('wheel', e => {
   e.preventDefault();
   scale += e.deltaY * -0.0015;
@@ -58,7 +69,7 @@ container.addEventListener('wheel', e => {
   updateTransform();
 });
 
-// Pan
+// Pan (mouse)
 container.addEventListener('mousedown', e => {
   isPanning = true;
   startX = e.clientX - posX;
@@ -70,6 +81,46 @@ window.addEventListener('mousemove', e => {
   posX = e.clientX - startX;
   posY = e.clientY - startY;
   updateTransform();
+});
+
+// Mobile touch support
+container.addEventListener('touchstart', e => {
+  if(e.touches.length === 1){
+    isPanning = true;
+    startX = e.touches[0].clientX - posX;
+    startY = e.touches[0].clientY - posY;
+  } else if(e.touches.length === 2){
+    lastDist = Math.hypot(
+      e.touches[0].clientX - e.touches[1].clientX,
+      e.touches[0].clientY - e.touches[1].clientY
+    );
+  }
+}, { passive: false });
+
+container.addEventListener('touchmove', e => {
+  e.preventDefault();
+  if(e.touches.length === 1 && isPanning){
+    posX = e.touches[0].clientX - startX;
+    posY = e.touches[0].clientY - startY;
+    updateTransform();
+  } else if(e.touches.length === 2){
+    let dist = Math.hypot(
+      e.touches[0].clientX - e.touches[1].clientX,
+      e.touches[0].clientY - e.touches[1].clientY
+    );
+    if(lastDist){
+      let delta = dist - lastDist;
+      scale *= 1 + delta / 300;
+      scale = Math.min(Math.max(0.2, scale), 3);
+      updateTransform();
+    }
+    lastDist = dist;
+  }
+}, { passive: false });
+
+container.addEventListener('touchend', e => {
+  if(e.touches.length < 2) lastDist = null;
+  if(e.touches.length === 0) isPanning = false;
 });
 
 // Position tiles in golden-angle spiral
@@ -93,20 +144,36 @@ function positionTiles() {
 }
 positionTiles();
 
-// Focus on latest note
-const tiles = document.querySelectorAll('.tile');
-if(tiles.length){
-    const last = tiles[tiles.length-1];
-    posX = -parseFloat(last.dataset.x);
-    posY = -parseFloat(last.dataset.y);
+// Auto-focus on newest note
+function focusOnLatestNote() {
+  const tiles = document.querySelectorAll('.tile');
+  if(!tiles.length) return;
+  const last = tiles[tiles.length-1];
+  const targetX = -parseFloat(last.dataset.x);
+  const targetY = -parseFloat(last.dataset.y);
+
+  const steps = 15;
+  let step = 0;
+  const startX = posX, startY = posY;
+  const anim = setInterval(() => {
+    step++;
+    posX = startX + (targetX - startX) * (step / steps);
+    posY = startY + (targetY - startY) * (step / steps);
     updateTransform();
+    if(step >= steps) clearInterval(anim);
+  }, 20);
+
+  scale = 1.2;
+  updateTransform();
 }
+
+focusOnLatestNote();
 
 // Global language selector
 document.getElementById('langSelect').addEventListener('change', async () => {
     const lang = document.getElementById('langSelect').value;
     const tiles = document.querySelectorAll('.tile');
-    if(!lang){ // Original
+    if(!lang){
         tiles.forEach(tile => tile.querySelector('.note-text').textContent = tile.dataset.original);
         return;
     }
@@ -131,5 +198,6 @@ document.getElementById('langSelect').addEventListener('change', async () => {
     }
 });
 </script>
+
 </body>
 </html>
