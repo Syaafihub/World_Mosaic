@@ -122,49 +122,36 @@ container.addEventListener('touchend', e => {
   if(e.touches.length === 0) isPanning = false;
 });
 
-// Position tiles in expanding square grid
-function positionTilesGrid() {
+// Center-out expanding square grid
+function positionTilesSquareGrid() {
   const tiles = document.querySelectorAll('.tile');
   const tileWidth = 150;
   const tileHeight = 90;
   const spacing = 20;
-  const centerX = 0;
-  const centerY = 0;
+
+  const totalNotes = tiles.length;
+  const gridSize = Math.ceil(Math.sqrt(totalNotes));
+  const centerOffset = (gridSize - 1) / 2;
 
   tiles.forEach((tile, idx) => {
-    const layer = Math.floor((Math.sqrt(idx + 1) - 1) / 2) + 1;
-    const layerMax = (2 * layer + 1) ** 2;
-    const layerMin = ((2 * (layer - 1) + 1) ** 2) || 0;
-    const offset = idx - layerMin;
-    const sideLen = layer * 2;
+    const row = Math.floor(idx / gridSize);
+    const col = idx % gridSize;
 
-    let x = 0, y = 0;
-
-    if(offset < sideLen) {               // top side
-      x = -layer + offset;
-      y = -layer;
-    } else if(offset < sideLen * 2) {    // right side
-      x = layer;
-      y = -layer + (offset - sideLen);
-    } else if(offset < sideLen * 3) {    // bottom side
-      x = layer - (offset - sideLen*2);
-      y = layer;
-    } else {                             // left side
-      x = -layer;
-      y = layer - (offset - sideLen*3);
-    }
+    const x = (col - centerOffset) * (tileWidth + spacing);
+    const y = (row - centerOffset) * (tileHeight + spacing);
 
     tile.style.position = 'absolute';
-    tile.style.left = `${centerX + x * (tileWidth + spacing)}px`;
-    tile.style.top = `${centerY + y * (tileHeight + spacing)}px`;
-    tile.dataset.x = centerX + x * (tileWidth + spacing);
-    tile.dataset.y = centerY + y * (tileHeight + spacing);
+    tile.style.left = `${x}px`;
+    tile.style.top = `${y}px`;
+    tile.dataset.x = x;
+    tile.dataset.y = y;
+
     if(!tile.dataset.original){
       tile.dataset.original = tile.querySelector('.note-text').textContent;
     }
   });
 }
-positionTilesGrid();
+positionTilesSquareGrid();
 
 // Auto-focus on newest note
 function focusOnLatestNote() {
