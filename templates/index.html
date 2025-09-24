@@ -12,7 +12,6 @@
     header .controls { display: flex; align-items: center; gap: 10px; }
     #canvas-container { width: 100vw; height: 100vh; position: relative; touch-action: none; }
     #canvas { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%) scale(1); }
-    .tile { width: 100px; height: 60px; background: #ffd966; border-radius: 8px; display: flex; align-items: center; justify-content: center; text-align: center; padding: 5px; box-sizing: border-box; }
     footer { position: fixed; bottom: 0; width: 100%; text-align: center; background: rgba(255,255,255,0.9); padding: 5px; font-size: 0.8em; }
     textarea { width: 200px; height: 50px; }
     button { padding: 5px 10px; }
@@ -126,7 +125,7 @@ container.addEventListener('touchend', e => {
 // Position tiles in golden-angle spiral
 function positionTiles() {
   const tiles = document.querySelectorAll('.tile');
-  const spacing = 220;
+  const spacing = 300; // increased spacing for bigger tiles
   tiles.forEach((tile, idx)=>{
     const angle = idx * 137.5 * (Math.PI/180);
     const radius = Math.sqrt(idx) * spacing;
