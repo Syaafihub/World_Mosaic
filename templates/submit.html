@@ -4,21 +4,26 @@
   <meta charset="UTF-8">
   <title>Submit Note</title>
   <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
 </head>
 <body>
-
-<header>
-  <h1>➕ Add a Note</h1>
-  <a class="btn" href="{{ url_for('home') }}">⬅ Back</a>
-</header>
-
-<main style="margin-top:80px; display:flex; justify-content:center; align-items:center; height:80vh;">
-  <form method="POST" style="display:flex; flex-direction:column; gap:10px; width:250px;">
-    <textarea name="note" placeholder="Write your note..." required></textarea>
+<h1>Submit a Note</h1>
+<form method="POST" action="/submit">
+    <textarea id="note" name="note" maxlength="{{ max_chars }}" required></textarea>
+    <div class="counter" id="charCount">0/{{ max_chars }}</div>
     <button type="submit">Submit</button>
-  </form>
-</main>
+</form>
 
+<script>
+const textarea = document.getElementById('note');
+const charCount = document.getElementById('charCount');
+const maxChars = {{ max_chars }};
+
+textarea.addEventListener('input', () => {
+    if(textarea.value.length > maxChars){
+        textarea.value = textarea.value.slice(0, maxChars);
+    }
+    charCount.textContent = `${textarea.value.length}/${maxChars}`;
+});
+</script>
 </body>
 </html>
