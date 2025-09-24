@@ -71,6 +71,11 @@ header .btn:hover {
   overflow-wrap: break-word;
   cursor: grab;
   transition: transform 0.2s;
+  overflow: hidden;         /* hide overflow outside tile */
+  text-overflow: ellipsis;  /* show "..." if text is too long */
+  display: -webkit-box;     
+  -webkit-line-clamp: 4;    /* max lines */
+  -webkit-box-orient: vertical;
 }
 
 .tile:active {
