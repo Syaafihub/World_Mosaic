@@ -1,33 +1,43 @@
 from flask import Flask, render_template, request, redirect, url_for, jsonify
-from better_profanity import profanity
-from googletrans import Translator
+from deep_translator import GoogleTranslator
 
 app = Flask(__name__)
-profanity.load_censor_words()
-translator = Translator()
 
-notes = []  # In-memory list of notes
+# In-memory notes list
+notes = []
 
 @app.route("/")
-def index():
+def home():
     return render_template("index.html", notes=notes)
 
-@app.route("/add_note", methods=["POST"])
-def add_note():
-    content = request.form.get("content")
-    if not content:
-        return redirect(url_for("index"))
-    content = profanity.censor(content)
-    notes.append({"content": content})
-    return redirect(url_for("index"))
+@app.route("/submit", methods=["GET", "POST"])
+def submit():
+    if request.method == "POST":
+        text = request.form.get("note")
+        if text:
+            notes.append({"text": text})
+        return redirect(url_for("home"))
+    return render_template("submit.html")
 
-@app.route("/translate/<int:note_id>/<lang>")
-def translate_note(note_id, lang):
-    if 0 <= note_id < len(notes):
-        original = notes[note_id]["content"]
-        translated = translator.translate(original, dest=lang).text
-        return jsonify({"translated": translated})
-    return jsonify({"translated": ""})
+@app.route("/translate", methods=["POST"])
+def translate():
+    data = request.get_json()
+    indices = data.get("indices", [])
+    lang = data.get("lang")
+    translations = {}
+
+    if lang and indices:
+        for idx in indices:
+            try:
+                idx = int(idx)
+                if 0 <= idx < len(notes):
+                    original = notes[idx]["text"]
+                    translated = GoogleTranslator(source="auto", target=lang).translate(original)
+                    translations[idx] = translated
+            except Exception as e:
+                translations[idx] = f"[Error translating: {e}]"
+
+    return jsonify(translations)
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=5000, debug=True)
+    app.run(debug=True)
