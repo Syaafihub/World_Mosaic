@@ -5,6 +5,17 @@
   <title>World Mosaic</title>
   <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <style>
+    body { margin: 0; overflow: hidden; font-family: Arial, sans-serif; }
+    header { position: fixed; top: 0; width: 100%; background: #fff; z-index: 1000; padding: 10px; display: flex; align-items: center; gap: 20px; }
+    header h1 { margin: 0; font-size: 1.5em; }
+    header .controls { display: flex; align-items: center; gap: 10px; }
+    #canvas-container { width: 100vw; height: 100vh; position: relative; touch-action: none; }
+    #canvas { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%) scale(1); }
+    footer { position: fixed; bottom: 0; width: 100%; text-align: center; background: rgba(255,255,255,0.9); padding: 5px; font-size: 0.8em; }
+    textarea { width: 200px; height: 50px; }
+    button { padding: 5px 10px; }
+  </style>
 </head>
 <body>
 
@@ -35,7 +46,7 @@
 </div>
 
 <footer>
-  <small>Use mouse wheel or pinch to zoom, drag to pan. Select a language to translate all notes.</small>
+  <small>Use mouse wheel to zoom, drag to pan. Select a language to translate all notes.</small>
 </footer>
 
 <script>
@@ -111,27 +122,36 @@ container.addEventListener('touchend', e => {
   if(e.touches.length === 0) isPanning = false;
 });
 
-// Square grid positioning
-function positionTiles() {
+// Center-out expanding square grid
+function positionTilesSquareGrid() {
   const tiles = document.querySelectorAll('.tile');
-  const spacing = 180; // distance between notes
+  const tileWidth = 150;
+  const tileHeight = 90;
+  const spacing = 20;
+
+  const totalNotes = tiles.length;
+  const gridSize = Math.ceil(Math.sqrt(totalNotes));
+  const centerOffset = (gridSize - 1) / 2;
+
   tiles.forEach((tile, idx) => {
-    const size = Math.ceil(Math.sqrt(tiles.length)); // grid size
-    const row = Math.floor(idx / size);
-    const col = idx % size;
-    const x = (col - (size - 1) / 2) * spacing;
-    const y = (row - (size - 1) / 2) * spacing;
+    const row = Math.floor(idx / gridSize);
+    const col = idx % gridSize;
+
+    const x = (col - centerOffset) * (tileWidth + spacing);
+    const y = (row - centerOffset) * (tileHeight + spacing);
+
     tile.style.position = 'absolute';
     tile.style.left = `${x}px`;
     tile.style.top = `${y}px`;
     tile.dataset.x = x;
     tile.dataset.y = y;
+
     if(!tile.dataset.original){
       tile.dataset.original = tile.querySelector('.note-text').textContent;
     }
   });
 }
-positionTiles();
+positionTilesSquareGrid();
 
 // Auto-focus on newest note
 function focusOnLatestNote() {
@@ -155,6 +175,7 @@ function focusOnLatestNote() {
   scale = 1.2;
   updateTransform();
 }
+
 focusOnLatestNote();
 
 // Global language selector
